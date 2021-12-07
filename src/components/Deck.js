@@ -8,7 +8,6 @@ export default function Deck({
   selectedCard,
 }) {
   const mappedHand = hand.map((card) => {
-    // console.log(card);
     return (
       <div
         key={card.id}
@@ -21,6 +20,7 @@ export default function Deck({
           }`,
         }}
       >
+        <p>Cost: {card.cost}</p>
         <p>{card.name}</p>
         <p>{card.description}</p>
       </div>
@@ -28,15 +28,8 @@ export default function Deck({
   });
   return (
     <div>
-      <div>Draw {drawPile.length}</div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-        }}
-      >
-        {mappedHand}
-      </div>
+      <div>Draw Pile: {drawPile.length}</div>
+      <div className="row">{mappedHand}</div>
     </div>
   );
 }
