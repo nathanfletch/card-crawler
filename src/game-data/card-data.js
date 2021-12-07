@@ -14,6 +14,7 @@ export const allCards = {
     block: 0,
   },
   strike: {
+    description: "Deal 6 damage",
     name: "Strike",
     type: "Attack",
     rarity: "Basic",
@@ -21,8 +22,9 @@ export const allCards = {
     upgraded: false,
     damage: 6,
   },
-  block: {
-    name: "Block",
+  defend: {
+    description: "Block 5 damage",
+    name: "Defend",
     type: "Ability",
     rarity: "Basic",
     cost: 1,
