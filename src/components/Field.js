@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Char from "./Char";
 import Deck from "./Deck";
 import Monster from "./Monster";
@@ -6,41 +6,68 @@ import Monster from "./Monster";
 // import PropTypes from 'prop-types';
 // import { allCards } from '../game-data/card-data';
 import { useSelector } from "react-redux";
-import { useFirestoreConnect, isLoaded, isEmpty } from "react-redux-firebase";
+//replace with the .get
+import { useFirestore } from "react-redux-firebase";
 import { draw } from "../utilities";
 
 function Field() {
-  useFirestoreConnect([{ collection: "game" }]);
-  const game = useSelector((state) => state.firestore.ordered.game);
-  const [selectedCard, setSelectedCard] = useState(null);
+  const firestore = useFirestore();
 
-  if (isLoaded(game)) {
-    //start combat logic: lifec
-    const deck = game[0].deck;
-    const [hand, drawPile] = draw(deck, 5);
-    console.log(hand, drawPile);
-    //draw a hand, show the hand
-    return (
-      <>
+  //related to the listener
+  // const game = useSelector((state) => state.firestore.ordered.game);
+  // console.log(game);
+  //put everything in useState hooks - first var is the state, 2nd is the function to set it
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [hand, setHand] = useState(null);
+  const [drawPile, setDrawPile] = useState(null);
+  const [deck, setDeck] = useState(null);
+
+  //this is the hook equivalent of componentDidMount and componentDidUpdate - run some code on mounting and rerendering.
+  //first arg: callback fn to run, 2nd arg: dependency array
+  //dep array: 1. don't have it - always runs every render (doesn't depend on anything) 2. put a state variable in the array [deck]: only run this callback when this state has changed, 3. empty array [] - only run on mount, never on rerender
+
+  useEffect(() => {
+    //represents start of combat code
+    console.log("should only run once - start combat");
+    firestore.get({ collection: "game", doc: "1" }).then((gameData) => {
+      const objectFromDb = {
+        deck: gameData.get("deck"),
+      };
+      console.log(objectFromDb.deck);
+      setDeck(objectFromDb.deck);
+      const [handLoaded, drawPileLoaded] = draw(objectFromDb.deck, 5);
+      setHand(handLoaded);
+      setDrawPile(drawPileLoaded);
+    });
+  }, [firestore]);
+
+  return (
+    <>
+      {hand && deck && drawPile ? (
+        <>
+          <div>
+            <Char />
+            <Monster />
+          </div>
+          <Deck
+            drawPile={drawPile}
+            hand={hand}
+            selectedCard={selectedCard}
+            setSelectedCard={setSelectedCard}
+          />{" "}
+        </>
+      ) : (
         <div>
-          <Char />
-          <Monster />
+          <p>Loading...</p>
         </div>
-        <Deck
-          drawPile={drawPile}
-          hand={hand}
-          selectedCard={selectedCard}
-          setSelectedCard={setSelectedCard}
-        />
-      </>
-    );
-  } else {
-    return (
-      <div>
-        <p>Loading...</p>
-      </div>
-    );
-  }
+      )}
+    </>
+  );
+
+  // return (
+  //
+  // );
+  // }
   //sort through deck
   //shuffle 5 random cards (make functions)
   //remainder of deck should be draw pile
@@ -50,5 +77,19 @@ function Field() {
   //end turn button - resolve some end turn effects -
   //enemy turn setTimeout - 2 s - animation library: anime.js, resolve their attacks/debuffs, etc
 }
+
+// handleChangingSelectedTicket = (id) => {
+//   this.props.firestore
+//     .get({ collection: "tickets", doc: id })
+//     .then((ticket) => {
+//       const firestoreTicket = {
+//         names: ticket.get("names"),
+//         location: ticket.get("location"),
+//         issue: ticket.get("issue"),
+//         id: ticket.id,
+//       };
+//       this.setState({ selectedTicket: firestoreTicket });
+//     });
+// };
 
 export default Field;

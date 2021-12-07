@@ -1,3 +1,11 @@
+/*
+manage combat with redux store state or local state
+at the end of combat, make 1 write to update the database
+
+add ids to newDeck cards before putting in firestore
+*/
+
+
 // import allCards from './card-data';
 // const {strike, block, bash} = allCards
 // const deck = [strike, strike, strike, strike, strike, block, block, block, block, bash]

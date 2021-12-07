@@ -1,3 +1,5 @@
+
+
 export const allCards = {
   bash: {
     name: "Bash",
@@ -32,3 +34,18 @@ export const allCards = {
     block: 5,
   },
 };
+const { strike, defend, bash } = allCards;
+
+export const newDeck = [
+  { ...strike, id:1},
+  { ...strike, id:2},
+  { ...strike, id:3},
+  { ...strike, id:4},
+  { ...strike, id:5},
+  { ...defend, id:6},
+  { ...defend, id:7},
+  { ...defend, id:8},
+  { ...defend, id:9},
+  { ...bash, id:10},
+//move stuff here, give ids
+]

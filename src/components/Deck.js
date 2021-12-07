@@ -8,7 +8,7 @@ export default function Deck({
   selectedCard,
 }) {
   const mappedHand = hand.map((card) => {
-    console.log(card);
+    // console.log(card);
     return (
       <div
         key={card.id}
@@ -42,7 +42,10 @@ export default function Deck({
 }
 
 Deck.propTypes = {
-  
+  drawPile: PropTypes.array,
+  hand: PropTypes.array,
+  selectedCard: PropTypes.object,
+  setSelectedCard: PropTypes.func,
 };
 
 //figure out way to stop drawing cards on click
