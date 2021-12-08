@@ -22,6 +22,15 @@ function Field() {
 
   //put everything in useState hooks - first var is the state, 2nd is the function to set it
   const [selectedCard, setSelectedCard] = useState(null);
+  /*
+  maybe group all of these up into one "piles" object to clean it up:
+  {
+    drawPile: [],
+    hand: [],
+    discard [],
+    deck: arrayFromDb
+  }
+  */
   const [hand, setHand] = useState(null);
   const [drawPile, setDrawPile] = useState(null);
   const [discardPile, setDiscardPile] = useState([]);
@@ -36,12 +45,10 @@ function Field() {
     block: 0,
     id: "1",
     debuffs: {
-      vulnerable: 10,
-      weak: 10,
+      vulnerable: 0,
+      weak: 0,
     },
     intent: "Will buff with a ritual",
-    // actionMessage: "The monster intends to buff himself", //The monster deals x damage to you
-    // setIntent: function(turnNumber) {this.in} // buff, attack, defend, debuff - eventually have a function setIntent()
   });
   const [player, setPlayer] = useState({
     maxHp: 80,
@@ -49,10 +56,10 @@ function Field() {
     maxEnergy: 3,
     strength: 0,
     block: 0,
-    currentEnergy: 3, //update when we play a card
+    currentEnergy: 3,
     debuffs: {
-      vulnerable: 10,
-      weak: 10,
+      vulnerable: 0,
+      weak: 0,
     },
   });
   const [turn, setTurn] = useState(0);

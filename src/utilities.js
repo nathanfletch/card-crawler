@@ -11,6 +11,7 @@ export function draw(deck, discardPile, numToDraw) {
     if (!deckCopy.length) {
       deckCopy = discardCopy;
       discardCopy = [];
+      console.log("reshuffled!", discardCopy);
     }
     const index = Math.floor(Math.random() * deckCopy.length);
     hand.push(deckCopy[index]);
