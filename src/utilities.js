@@ -17,14 +17,11 @@
 //   }
 //   return [hand, deckCopy, discardCopy];
 // }
-export function draw({ hand, drawPile, discardPile}, numToDraw) {
+export function draw({ hand, drawPile, discardPile }, numToDraw) {
   let handCopy = [...hand];
   let drawCopy = [...drawPile];
   let discardCopy = [...discardPile];
   for (let i = 0; i < numToDraw; i++) {
-    // console.log(
-    //   `hand: ${hand.length}, deckCopy: ${drawCopy.length}, discardCopy: ${discardCopy.length}`
-    // );
     if (!drawCopy.length) {
       drawCopy = discardCopy;
       discardCopy = [];
@@ -34,9 +31,11 @@ export function draw({ hand, drawPile, discardPile}, numToDraw) {
     handCopy.push(drawCopy[index]);
     drawCopy.splice(index, 1);
   }
-  return {handCopy, drawCopy, discardCopy};
+  // console.log(
+  //   `hand: ${handCopy.length}, drawCopy: ${drawCopy.length}, discardCopy: ${discardCopy.length}`
+  // );
+  return { hand: handCopy, drawPile: drawCopy, discardPile: discardCopy };
 }
-
 
 export function calcDamage(target, card, attacker) {
   const scaledAttack = Math.floor(

@@ -11,6 +11,7 @@ import GameOver from "./GameOver";
 import { useFirestore } from "react-redux-firebase";
 import { draw, calcDamage } from "../utilities";
 import { monsterActions, cultist } from "../game-data/monster-data";
+import { allCards } from "../game-data/card-data";
 
 function Field() {
   //start combat - monster data, display intent - player data - hp energy
@@ -22,8 +23,9 @@ function Field() {
   const firestore = useFirestore();
 
   //put everything in useState hooks - first var is the state, 2nd is the function to set it
+  const [deck, setDeck] = useState(null);
+  const [player, setPlayer] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
-  const [deck, setDeck] = useState(null)
   const [isMonsterTurn, setIsMonsterTurn] = useState(false);
   const [combatDeck, setCombatDeck] = useState({
     hand: [],
@@ -33,18 +35,6 @@ function Field() {
   const { hand, drawPile, discardPile } = combatDeck;
   const [actionMessage, setActionMessage] = useState(null);
   const [monster, setMonster] = useState(cultist);
-  const [player, setPlayer] = useState({
-    maxHp: 80,
-    currentHp: 80,
-    maxEnergy: 3,
-    strength: 0,
-    block: 0,
-    currentEnergy: 3,
-    debuffs: {
-      vulnerable: 0,
-      weak: 0,
-    },
-  });
   const [turn, setTurn] = useState(0);
   //this is the hook equivalent of componentDidMount and componentDidUpdate - run some code on mounting and rerendering.
   //first arg: callback fn to run, 2nd arg: dependency array
@@ -55,11 +45,13 @@ function Field() {
     firestore.get({ collection: "game", doc: "1" }).then((gameData) => {
       const objectFromDb = {
         deck: gameData.get("deck"),
+        player: gameData.get("player"),
       };
-      setDeck(objectFromDb.deck)
-
-      setCombatDeck(draw({ hand:[], drawPile:objectFromDb.deck, discardPile:[] }, 5))
-      
+      setDeck(objectFromDb.deck);
+      setPlayer(objectFromDb.player);
+      setCombatDeck(
+        draw({ hand: [], drawPile: objectFromDb.deck, discardPile: [] }, 5)
+      );
     });
   }, [firestore]);
 
@@ -137,12 +129,17 @@ function Field() {
         debuffs: decrementedBuffs,
       };
     });
-    
-    setCombatDeck(draw({
-      ...combatDeck,
-      hand: [],
-      discardPile: discardPile.concat(hand)
-    }), 5);
+
+    setCombatDeck(
+      draw(
+        {
+          ...combatDeck,
+          discardPile: discardPile.concat(hand),
+          hand: [],
+        },
+        5
+      )
+    );
 
     setMonster((prevMonsterState) => {
       const decrementedBuffs = {};
@@ -221,29 +218,45 @@ function Field() {
   // }
   function handleAcceptReward(reward) {
     switch (reward) {
-    case 'gold':
-      setPlayer({
-        ...player,
-        gold: player.gold + 10,
-      })
-      break;
-    case 'card':
-      setDeck({
-        ...deck
-      });
-      break;
+      case "gold":
+        setPlayer((prevPlayerState) => {
+          return {
+            ...prevPlayerState,
+            gold: prevPlayerState.gold + 10,
+          };
+        });
+        break;
+      case "card":
+        setDeck((prevDeckState) => [...prevDeckState, allCards.bludgeon]);
+        break;
       default:
         alert(`There was an error!`);
     }
   }
 
   function handleSave() {
+    setPlayer((prevPlayerState) => {
+      return {
+        ...prevPlayerState,
+        currentEnergy: prevPlayerState.maxEnergy,
+        strength: 0,
+        block: 0,
+        debuffs: {
+          vulnerable: 0,
+          weak: 0,
+        },
+      };
+    });
     console.log("saved");
+    return firestore.update(
+      { collection: "game", doc: "1" },
+      { player: player, deck: deck }
+    );
   }
-  
+
   return (
     <>
-      {hand && drawPile ? (
+      {hand && drawPile && player ? (
         <>
           {monster.currentHp <= 0 || player.currentHp <= 0 ? (
             <GameOver

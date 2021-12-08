@@ -1,8 +1,8 @@
 export const cultist = {
   name: "Cultist",
   type: "Normal",
-  currentHp: 51,
-  maxHp: 51,
+  currentHp: 1,
+  maxHp: 1,
   strength: 0,
   block: 0,
   id: "1",

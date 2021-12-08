@@ -15,18 +15,17 @@ describe("draw", () => {
   //   expect(expectedDrawpile.length).toEqual(0);
   //   expect(expectedDiscardPile.length).toEqual(5);
   // });
-  test("should draw 2 and reshuffle discard pile", () => {
-    const discardPile = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
-    // const hand = [];
-    const drawPile = [];
-    const [expectedHand, expectedDrawpile, expectedDiscardPile] = draw(
-      drawPile,
-      discardPile,
-      5
-    );
-    expect(expectedHand.length).toEqual(5);
-    expect(expectedDrawpile.length).toEqual(5);
-    expect(expectedDiscardPile.length).toEqual(0);
+  test("should reshuffle discard pile and draw 5", () => {
+    const piles = {
+      discardPile: ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"],
+      hand: [],
+      drawPile: [],
+    };
+    const { hand, drawPile, discardPile } = draw(piles, 5);
+    // console.log(expectedHand)
+    expect(hand.length).toEqual(5);
+    expect(drawPile.length).toEqual(5);
+    expect(discardPile.length).toEqual(0);
   });
   // test("should equal one of the previous elements in the draw pile", () => {
   //   const discardPile = ["f"];

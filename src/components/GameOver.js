@@ -1,6 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 //set player with gold, deck with a card, save to db
-export default function GameOver({ player, success, monster, handleAcceptReward,handleSave }) {
+export default function GameOver({
+  player,
+  success,
+  monster,
+  handleAcceptReward,
+  handleSave,
+}) {
+  const [acceptedGold, setAcceptedGold] = useState(false);
+  const [acceptedCard, setAcceptedCard] = useState(false);
   return (
     <div>
       {success ? (
@@ -8,11 +16,29 @@ export default function GameOver({ player, success, monster, handleAcceptReward,
           <h2>You defeated {monster.name}!</h2>
           <div>
             <p>Rewards:</p>
-            <button onClick={handleAcceptReward('gold')}>You won a card</button>
-          
-            <button onClick={handleAcceptReward('card')}>You won a card</button>
+            {acceptedGold ? null : (
+              <button
+                onClick={() => {
+                  setAcceptedGold(true);
+                  handleAcceptReward("gold");
+                }}
+              >
+                You won some gold
+              </button>
+            )}
+
+            {acceptedCard ? null : (
+              <button
+                onClick={() => {
+                  setAcceptedCard(true);
+                  handleAcceptReward("card");
+                }}
+              >
+                You won a Bludgeon
+              </button>
+            )}
           </div>
-          <button onClick={handleSave()}>Fight next monster</button>
+          <button onClick={() => handleSave()}>Fight next monster</button>
         </div>
       ) : (
         <div>

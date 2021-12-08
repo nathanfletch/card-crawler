@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { newDeck } from "../game-data/card-data";
+import { newPlayer } from "../game-data/player-data";
 import { useFirestore } from "react-redux-firebase";
 
 /*
@@ -16,7 +17,7 @@ export default function Start({ setShownComponent }) {
   const firestore = useFirestore();
   const createGame = () => {
     setShownComponent("battle"); // check here if we have a bug
-    
+
     // firestore.setValue( { collection: "deck" }, { newDeck })
     // var batch = firestore.batch();
     // newDeck.forEach((card) => {
@@ -26,7 +27,7 @@ export default function Start({ setShownComponent }) {
     // batch.commit();
     return firestore.update(
       { collection: "game", doc: "1" },
-      { deck: newDeck }
+      { player: newPlayer, deck: newDeck }
     );
     //how do we access it in the future? id?
     //game: [{newDeck: [{damage:6},]}] access: game[0].newDeck
@@ -41,7 +42,7 @@ in you array add updates
   return (
     <div>
       <p>Start Window</p>
-      <button onClick={createGame}>Start Battle</button>
+      <button onClick={createGame}>Start New Game</button>
       <button onClick={() => setShownComponent("map")}>View Map</button>
     </div>
   );
