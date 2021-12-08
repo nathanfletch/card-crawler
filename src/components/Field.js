@@ -74,9 +74,14 @@ function Field() {
       };
       // console.log(objectFromDb.deck);
       setDeck(objectFromDb.deck);
-      const [handLoaded, drawPileLoaded] = draw(objectFromDb.deck, 5);
+      const [handLoaded, drawPileLoaded, discardPileLoaded] = draw(
+        objectFromDb.deck,
+        discardPile,
+        5
+      );
       setHand(handLoaded);
       setDrawPile(drawPileLoaded);
+      setDiscardPile(discardPileLoaded);
     });
   }, [firestore]);
 
@@ -189,6 +194,17 @@ function Field() {
           debuffs: decrementedBuffs,
         };
       });
+      //draw somewhere around here
+      //discard hand: figure this out, maybe use tests, refactor to use redux, handle monster/player death, maybe implement different monster
+      const newDiscard = [...discardPile, ...hand];
+      console.log(newDiscard);
+      setDiscardPile(newDiscard);
+      setHand([]);
+      const [newHand, newDrawPile, newDiscardPile] = draw(deck, discardPile, 5);
+      setHand(newHand);
+      setDrawPile(newDrawPile);
+      setDiscardPile(newDiscardPile);
+
       setMonster((prevMonsterState) => {
         const decrementedBuffs = {};
         Object.keys(prevMonsterState.debuffs).forEach((debuffKey) => {
@@ -197,7 +213,7 @@ function Field() {
             ? prevDebuff - 1
             : prevDebuff;
         });
-
+        //intentDamage not always equal to actual damage even when not blocking
         const intentDamage =
           calcDamage(
             { ...player, block: 0 },
