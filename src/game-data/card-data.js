@@ -28,6 +28,20 @@ export const allCards = {
       weak: 0,
     },
   },
+  bludgeon: {
+    description: "Deal 32 damage",
+    name: "Bludgeon",
+    type: "Attack",
+    targetted: true,
+    rarity: "Rare",
+    cost: 3,
+    upgraded: false,
+    damage: 32,
+    debuffs: {
+      vulnerable: 0,
+      weak: 0,
+    },
+  },
   defend: {
     description: "Block 5 damage",
     name: "Defend",
