@@ -22,6 +22,7 @@ export function draw(deck, discardPile, numToDraw) {
   }
   return [hand, deckCopy, discardCopy];
 }
+
 export function calcDamage(target, card, attacker) {
   // console.log(target, card, attacker);
   const scaledAttack = Math.floor(

@@ -9,7 +9,7 @@ import Monster from "./Monster";
 //replace with the .get
 import { useFirestore } from "react-redux-firebase";
 import { draw, calcDamage } from "../utilities";
-// import { cultist } from "../game-data/monster-data";
+import { monsterActions, cultist } from "../game-data/monster-data";
 
 function Field() {
   //start combat - monster data, display intent - player data - hp energy
@@ -31,25 +31,19 @@ function Field() {
     deck: arrayFromDb
   }
   */
-  const [hand, setHand] = useState(null);
-  const [drawPile, setDrawPile] = useState(null);
-  const [discardPile, setDiscardPile] = useState([]);
-  const [deck, setDeck] = useState(null);
-  const [actionMessage, setActionMessage] = useState(null);
-  const [monster, setMonster] = useState({
-    name: "Cultist",
-    type: "Normal",
-    currentHp: 51,
-    maxHp: 51,
-    strength: 0,
-    block: 0,
-    id: "1",
-    debuffs: {
-      vulnerable: 0,
-      weak: 0,
-    },
-    intent: "Will buff with a ritual",
+  // const [hand, setHand] = useState(null);
+  // const [drawPile, setDrawPile] = useState(null);
+  // const [discardPile, setDiscardPile] = useState([]);
+  //refactor: replace all sets setCombatDeck
+  const [combatDeck, setCombatDeck] = useState({
+    hand: [],
+    drawPile: [],
+    discardPile: [],
   });
+  const { hand, drawPile, discardPile } = combatDeck;
+
+  const [actionMessage, setActionMessage] = useState(null);
+  const [monster, setMonster] = useState(cultist);
   const [player, setPlayer] = useState({
     maxHp: 80,
     currentHp: 80,
@@ -67,35 +61,34 @@ function Field() {
   //first arg: callback fn to run, 2nd arg: dependency array
   //dep array: 1. don't have it - always runs every render (doesn't depend on anything) 2. put a state variable in the array [deck]: only run this callback when this state has changed, 3. empty array [] - only run on mount, never on rerender
 
-  //select card - add a check if we have energy
-  //play card, updates energy, implements effect
-  //end turn will proc monster action, advance turn, restore energy
-
   useEffect(() => {
     //represents start of combat code
-    // console.log("should only run once - start combat");
     firestore.get({ collection: "game", doc: "1" }).then((gameData) => {
-      //
       const objectFromDb = {
         deck: gameData.get("deck"),
       };
-      // console.log(objectFromDb.deck);
-      setDeck(objectFromDb.deck);
+      setCombatDeck({ ...combatDeck, drawPile: objectFromDb.deck });
       const [handLoaded, drawPileLoaded, discardPileLoaded] = draw(
         objectFromDb.deck,
         discardPile,
         5
       );
-      setHand(handLoaded);
-      setDrawPile(drawPileLoaded);
-      setDiscardPile(discardPileLoaded);
+      setCombatDeck({
+        hand: handLoaded,
+        drawPile: drawPileLoaded,
+        discardPile: discardPileLoaded,
+      });
     });
   }, [firestore]);
 
+  //handle buff eventually
+
   function resolveCard() {
-    setDiscardPile([...discardPile, selectedCard]);
-    setHand(hand.filter((card) => card.id !== selectedCard.id));
-    //handle buff eventually
+    setCombatDeck({
+      ...combatDeck,
+      hand: hand.filter((card) => card.id !== selectedCard.id),
+      discardPile: [...discardPile, selectedCard],
+    });
     setPlayer({
       ...player,
       currentEnergy: (player.currentEnergy -= selectedCard.cost),
@@ -130,50 +123,79 @@ function Field() {
     resolveCard();
   }
 
-  function endTurn() {
-    //end turn effects - don't have cards with these yet
-    //take monster turn (if hp > 0) - similar to resolving a card play - might be able to share logic a bit
-    //turn 0: buffs self (does nothing)
-    //turn 1: increments his strength by 3,
-    const monsterActions = {
-      darkStrike: {
-        description: "Deal 6 damage", //similar to intent
-        name: "Dark Strike",
-        type: "Attack",
-        damage: 3,
-        debuffs: {
-          vulnerable: 0,
-          weak: 0,
-        },
-      },
-      incantation: {
-        description: "Cast a buff to increase strength", //similar to intent
-        name: "Incantation",
-        type: "Buff",
-        damage: 0, // can we leave this off?
-        buffs: {
-          ritual: 3,
-        },
-        debuffs: {
-          vulnerable: 0,
-          weak: 0,
-        },
-      },
-    };
-    let currentAction;
-    if (!turn) {
-      setActionMessage(`The monster casts incantation`);
-    } else {
-      currentAction = monsterActions["darkStrike"];
-      setMonster({
-        ...monster,
-        strength: (monster.strength += 3),
+  function startNextTurn() {
+    setTurn(turn + 1);
+    const currentAction = monsterActions["darkStrike"];
+    //display before timeout
+    setPlayer((prevPlayerState) => {
+      const decrementedBuffs = {};
+      Object.keys(prevPlayerState.debuffs).forEach((debuffKey) => {
+        const prevDebuff = prevPlayerState.debuffs[debuffKey];
+        decrementedBuffs[debuffKey] = prevDebuff ? prevDebuff - 1 : prevDebuff;
       });
-      const dealtDamage = calcDamage(player, currentAction, monster);
-      setActionMessage(`The monster strikes you for ${dealtDamage}`);
-    }
 
+      return {
+        ...prevPlayerState,
+        block: 0,
+        currentEnergy: prevPlayerState.maxEnergy,
+        debuffs: decrementedBuffs,
+      };
+    });
+    //draw somewhere around here
+    //discard hand: figure this out, maybe use tests, handle monster/player death, refactor to use redux, maybe implement different monster
+    console.log("end of turn ", turn - 1);
+    console.log("hand: " + hand.length);
+    console.log("discardPile: " + discardPile.length);
+    const newDiscard = discardPile.concat(hand);
+    console.log("newDiscard: " + newDiscard.length);
+    // setCombatDeck({ ...combatDeck, discardPile: newDiscard, hand: [] });
+    console.dir({ ...combatDeck });
+    const [newHand, newDrawPile, newDiscardPile] = draw(
+      drawPile,
+      newDiscard,
+      5
+    );
+    setCombatDeck({
+      hand: newHand,
+      drawPile: newDrawPile,
+      discardPile: newDiscardPile,
+    });
+    setMonster((prevMonsterState) => {
+      const decrementedBuffs = {};
+      Object.keys(prevMonsterState.debuffs).forEach((debuffKey) => {
+        const prevDebuff = prevMonsterState.debuffs[debuffKey];
+        decrementedBuffs[debuffKey] = prevDebuff ? prevDebuff - 1 : prevDebuff;
+      });
+      //intentDamage not always equal to actual damage even when not blocking
+      const intentDamage = calcDamage({ ...player, block: 0 }, currentAction, {
+        ...monster,
+        strength: (prevMonsterState.strength += 3),
+      });
+      const intentMessage = `The monster will attack for ${intentDamage} damage`;
+      return {
+        ...prevMonsterState,
+        block: 0,
+        debuffs: decrementedBuffs,
+        intent: intentMessage,
+        strength: (prevMonsterState.strength += 3),
+      };
+      //damage number it wants to do before any block is considered - maybe can get this with calcDamage with a copy of the player object that has the block set to 0 calcDamage({...player, block: 0}, action,
+    });
+  }
+  //end turn effects - don't have cards with these yet
+  //turn 0: buffs self (does nothing)
+  //turn 1: increments his strength by 3,
+  function endTurn() {
+    //this code is like the beginning of the monster turn, but I think we need to do this before the player has th
+    let currentAction = monsterActions["darkStrike"];
+    if (!turn) {
+      setActionMessage(`The monster casts incantation!`);
+    } else {
+      const dealtDamage = calcDamage(player, currentAction, monster);
+      setActionMessage(`The monster strikes you for ${dealtDamage} damage!`);
+    }
     setTimeout(() => {
+      //resolve end of turn effects
       if (turn) {
         setPlayer({
           ...player,
@@ -184,58 +206,57 @@ function Field() {
       setActionMessage(null);
 
       //increment to next turn - reset some values - energy, decrement all buffs/debuffs by 1
-      setTurn(turn + 1);
-      setPlayer((prevPlayerState) => {
-        const decrementedBuffs = {};
-        Object.keys(prevPlayerState.debuffs).forEach((debuffKey) => {
-          const prevDebuff = prevPlayerState.debuffs[debuffKey];
-          decrementedBuffs[debuffKey] = prevDebuff
-            ? prevDebuff - 1
-            : prevDebuff;
-        });
+      startNextTurn(currentAction);
+      // setTurn(turn + 1);
+      // currentAction = monsterActions["darkStrike"];
+      // //display before timeout
+      // setPlayer((prevPlayerState) => {
+      //   const decrementedBuffs = {};
+      //   Object.keys(prevPlayerState.debuffs).forEach((debuffKey) => {
+      //     const prevDebuff = prevPlayerState.debuffs[debuffKey];
+      //     decrementedBuffs[debuffKey] = prevDebuff
+      //       ? prevDebuff - 1
+      //       : prevDebuff;
+      //   });
 
-        return {
-          ...prevPlayerState,
-          block: 0,
-          currentEnergy: prevPlayerState.maxEnergy,
-          debuffs: decrementedBuffs,
-        };
-      });
-      //draw somewhere around here
-      //discard hand: figure this out, maybe use tests, refactor to use redux, handle monster/player death, maybe implement different monster
-      const newDiscard = [...discardPile, ...hand];
-      console.log(newDiscard);
-      setDiscardPile(newDiscard);
-      setHand([]);
-      const [newHand, newDrawPile, newDiscardPile] = draw(deck, discardPile, 5);
-      setHand(newHand);
-      setDrawPile(newDrawPile);
-      setDiscardPile(newDiscardPile);
-
-      setMonster((prevMonsterState) => {
-        const decrementedBuffs = {};
-        Object.keys(prevMonsterState.debuffs).forEach((debuffKey) => {
-          const prevDebuff = prevMonsterState.debuffs[debuffKey];
-          decrementedBuffs[debuffKey] = prevDebuff
-            ? prevDebuff - 1
-            : prevDebuff;
-        });
-        //intentDamage not always equal to actual damage even when not blocking
-        const intentDamage =
-          calcDamage(
-            { ...player, block: 0 },
-            monsterActions["darkStrike"],
-            monster
-          ) + 3;
-        const intentMessage = `The monster will attack for ${intentDamage} damage`;
-        return {
-          ...prevMonsterState,
-          block: 0,
-          debuffs: decrementedBuffs,
-          intent: intentMessage,
-        };
-        //damage number it wants to do before any block is considered - maybe can get this with calcDamage with a copy of the player object that has the block set to 0 calcDamage({...player, block: 0}, action,
-      });
+      //   return {
+      //     ...prevPlayerState,
+      //     block: 0,
+      //     currentEnergy: prevPlayerState.maxEnergy,
+      //     debuffs: decrementedBuffs,
+      //   };
+      // });
+      // //draw somewhere around here
+      // //discard hand: figure this out, maybe use tests, handle monster/player death, refactor to use redux, maybe implement different monster
+      // const newDiscard = [...discardPile, ...hand];
+      // setCombatDeck({...combatDeck, discardPile: newDiscard, hand: []})
+      // const [newHand, newDrawPile, newDiscardPile] = draw(drawPile, discardPile, 5);
+      // setCombatDeck({ hand: newHand, drawPile: newDrawPile, discardPile: newDiscardPile })
+      // setMonster((prevMonsterState) => {
+      //   const decrementedBuffs = {};
+      //   Object.keys(prevMonsterState.debuffs).forEach((debuffKey) => {
+      //     const prevDebuff = prevMonsterState.debuffs[debuffKey];
+      //     decrementedBuffs[debuffKey] = prevDebuff
+      //       ? prevDebuff - 1
+      //       : prevDebuff;
+      //   });
+      //   //intentDamage not always equal to actual damage even when not blocking
+      //   const intentDamage =
+      //     calcDamage(
+      //       { ...player, block: 0 },
+      //       monsterActions["darkStrike"],
+      //       { ...monster, strength: prevMonsterState.strength += 3 }
+      //     );
+      //   const intentMessage = `The monster will attack for ${intentDamage} damage`;
+      //   return {
+      //     ...prevMonsterState,
+      //     block: 0,
+      //     debuffs: decrementedBuffs,
+      //     intent: intentMessage,
+      //     strength: (prevMonsterState.strength += 3),
+      //   };
+      //   //damage number it wants to do before any block is considered - maybe can get this with calcDamage with a copy of the player object that has the block set to 0 calcDamage({...player, block: 0}, action,
+      // });
     }, 2000);
 
     //check if battle is over/enemy defeated - maybe after every damage assignment
@@ -243,7 +264,7 @@ function Field() {
 
   return (
     <>
-      {hand && deck && drawPile ? (
+      {hand && drawPile ? (
         <>
           <div onClick={handleUntargetted} className="row">
             <Char player={player} />
