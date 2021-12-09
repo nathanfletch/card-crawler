@@ -88,3 +88,20 @@ player: {
   },
 }
 */
+
+//refactoring for redux:
+//combatdeckreducer
+//playerreducer
+//monsterreducer
+//deckreducer
+
+//add into rootReducer
+//get data from store instead of useState, utilize Provider components
+
+//pass action uses selected card  const action = {type: RESOLVE_CARD, selectedCard: selectedCard, target}
+
+//reducers: combine reducer (used for firestore)
+//testing (potentially)
+
+//change props passed to other components to get them from redux store instead.
+
