@@ -1,19 +1,8 @@
 import * as c from "../actions/ActionTypes";
+import { calcDamage } from "../utilities";
 
 export default function playerReducer(state = {}, action) {
-  const { type, selectedCard, player, dealtDamage, monster } = action;
-
-  const calcNewPlayerHp = () => {
-    if (monster.monsterActions[1].damage) {
-      if (dealtDamage >= player.currentHp) {
-        return 0;
-      } else {
-        return player.currentHp - dealtDamage;
-      }
-    } else {
-      return player.currentHp;
-    }
-  };
+  const { type, selectedCard, player, monster } = action;
 
   switch (type) {
     case c.START_COMBAT:
@@ -22,16 +11,27 @@ export default function playerReducer(state = {}, action) {
     case c.RESOLVE_CARD:
       return {
         ...state,
-        currentEnergy: player.currentEnergy - selectedCard.cost,
+        currentEnergy: state.currentEnergy - selectedCard.cost,
         block: selectedCard.block
-          ? player.block + selectedCard.block
-          : player.block,
+          ? state.block + selectedCard.block
+          : state.block,
       };
 
     case c.RESOLVE_MONSTER_ACTION:
+      let newHp;
+      if (monster.currentAction.damage) {
+        const dealtDamage = calcDamage(state, monster.currentAction, monster);
+        if (dealtDamage >= state.currentHp) {
+          newHp = 0;
+        } else {
+          newHp = state.currentHp - dealtDamage;
+        }
+      } else {
+        newHp = state.currentHp;
+      }
       return {
         ...state,
-        currentHp: calcNewPlayerHp(),
+        currentHp: newHp,
       };
 
     case c.START_NEXT_TURN:

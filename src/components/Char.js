@@ -1,7 +1,6 @@
 import React from "react";
 // import anime from 'animejs/lib/anime.es.js';
 
-
 export default function Char(props) {
   const { player } = props;
   const debuffsString = Object.keys(player.debuffs).map((debuffKey) => {

@@ -104,4 +104,3 @@ player: {
 //testing (potentially)
 
 //change props passed to other components to get them from redux store instead.
-

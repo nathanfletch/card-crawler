@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-//set player with gold, deck with a card, save to db
+
 export default function GameOver({
   player,
   success,

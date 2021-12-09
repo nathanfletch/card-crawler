@@ -24,7 +24,6 @@ export default function combatDeckReducer(state = {}, action) {
         },
         5
       );
-    // case :
     default:
       return state;
   }

@@ -51,7 +51,3 @@ Deck.propTypes = {
   selectedCard: PropTypes.object,
   setSelectedCard: PropTypes.func,
 };
-
-//figure out way to stop drawing cards on click
-//cards need ids
-//key for map divs

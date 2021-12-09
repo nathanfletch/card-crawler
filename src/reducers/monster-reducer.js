@@ -3,7 +3,7 @@ import { cultist } from "../game-data/monster-data";
 import { calcDamage } from "../utilities";
 
 export default function monsterReducer(state = {}, action) {
-  const { type, monster, selectedCard, player } = action;
+  const { type, monster, selectedCard, player, turn } = action;
 
   const calcNewMonsterHp = () => {
     const damage = calcDamage(monster, selectedCard, player);
@@ -21,7 +21,17 @@ export default function monsterReducer(state = {}, action) {
   switch (type) {
     case c.START_COMBAT:
     case c.RESET_COMBAT:
-      return cultist;
+      let newMonster = cultist.getNewTurnMonster(0);
+
+      const intentMessage = newMonster.getIntentMessage({
+        ...player,
+        block: 0,
+      });
+
+      return {
+        ...newMonster,
+        intent: intentMessage,
+      };
 
     case c.RESOLVE_CARD:
       return {
@@ -37,27 +47,29 @@ export default function monsterReducer(state = {}, action) {
         },
       };
 
+    case c.RESOLVE_MONSTER_ACTION:
+      return state.getBuffedMonsterFromAction();
+
     case c.START_NEXT_TURN:
+      let newTurnMonster = state.getNewTurnMonster(turn);
       const decrementedBuffs = {};
       Object.keys(state.debuffs).forEach((debuffKey) => {
         const prevDebuff = state.debuffs[debuffKey];
         decrementedBuffs[debuffKey] = prevDebuff ? prevDebuff - 1 : prevDebuff;
       });
-      const intentDamage = calcDamage(
-        { ...player, block: 0 },
-        state.monsterActions[1],
-        {
-          ...state,
-          strength: state.strength + 3,
-        }
-      );
-      const intentMessage = `The monster will attack for ${intentDamage} damage`;
-      return {
-        ...state,
-        block: 0,
+      newTurnMonster = {
+        ...newTurnMonster,
         debuffs: decrementedBuffs,
-        intent: intentMessage,
-        strength: state.strength + 3,
+        block: 0,
+      };
+
+      const newIntentMessage = newTurnMonster.getIntentMessage({
+        ...player,
+        block: 0,
+      });
+      return {
+        ...newTurnMonster,
+        intent: newIntentMessage,
       };
     default:
       return state;

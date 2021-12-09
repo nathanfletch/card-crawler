@@ -13,18 +13,18 @@ export const resolveCard = (combatDeck, selectedCard, player, monster) => ({
   monster,
 });
 
-export const resolveMonsterAction = (player, dealtDamage, monster) => ({
+export const resolveMonsterAction = (player, monster) => ({
   type: c.RESOLVE_MONSTER_ACTION,
   player,
-  dealtDamage,
   monster,
 });
 
-export const startNextTurn = (combatDeck, player, monster) => ({
+export const startNextTurn = (combatDeck, player, monster, turn) => ({
   type: c.START_NEXT_TURN,
   combatDeck,
   player,
   monster,
+  turn
 });
 
 export const acceptReward = (reward, player, deck) => ({
