@@ -24,6 +24,7 @@ export default function monsterReducer(state = {}, action) {
       console.log("starting new turn at combat start. turn number: " + turn);
       
       let newMonster = cultist.getNewTurnMonster(0);
+      console.log(newMonster);
 
       const intentMessage = newMonster.getIntentMessage({
         ...player,
