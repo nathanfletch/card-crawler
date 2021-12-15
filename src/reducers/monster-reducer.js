@@ -1,5 +1,5 @@
 import * as c from "../actions/ActionTypes";
-import { cultist } from "../game-data/monster-data";
+import { cultist, jawWorm } from "../game-data/monster-data";
 import { calcDamage } from "../utilities";
 
 export default function monsterReducer(state = {}, action) {
@@ -21,9 +21,9 @@ export default function monsterReducer(state = {}, action) {
   switch (type) {
     case c.START_COMBAT:
     case c.RESET_COMBAT:
-      console.log("starting new turn at combat start. turn number: " + turn);
-      
-      let newMonster = cultist.getNewTurnMonster(0);
+      console.log("starting new turn at combat start. turn number: " + 0);
+      const newCombatMonster = Math.random() < 0.5 ? cultist : jawWorm;
+      const newMonster = newCombatMonster.getNewTurnMonster(0);
       console.log(newMonster);
 
       const intentMessage = newMonster.getIntentMessage({
@@ -51,21 +51,19 @@ export default function monsterReducer(state = {}, action) {
       };
 
     case c.RESOLVE_MONSTER_ACTION:
-      return state.getBuffedMonsterFromAction();
+      return { ...state, block: 0 }.getBuffedMonsterFromAction();
 
     case c.START_NEXT_TURN:
       console.log("starting new turn at turn number: " + turn);
-      let newTurnMonster = state.getNewTurnMonster(turn);
+      //reset block to 0, then getNewTurn stuff
+      const monsterCopy = { ...state };
       const decrementedBuffs = {};
-      Object.keys(state.debuffs).forEach((debuffKey) => {
-        const prevDebuff = state.debuffs[debuffKey];
+      Object.keys(monsterCopy.debuffs).forEach((debuffKey) => {
+        const prevDebuff = monsterCopy.debuffs[debuffKey];
         decrementedBuffs[debuffKey] = prevDebuff ? prevDebuff - 1 : prevDebuff;
       });
-      newTurnMonster = {
-        ...newTurnMonster,
-        debuffs: decrementedBuffs,
-        block: 0,
-      };
+      let noBlockMonster = { ...monsterCopy, debuffs: decrementedBuffs };
+      let newTurnMonster = noBlockMonster.getNewTurnMonster(turn);
 
       const newIntentMessage = newTurnMonster.getIntentMessage({
         ...player,

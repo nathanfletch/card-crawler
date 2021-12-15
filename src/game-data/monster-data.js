@@ -1,31 +1,5 @@
 import { calcDamage } from "../utilities";
 
-// export const monsterActions = {
-//   darkStrike: {
-//     description: "Deal 6 damage", //similar to intent
-//     name: "Dark Strike",
-//     type: "Attack",
-//     damage: 3,
-//     debuffs: {
-//       vulnerable: 0,
-//       weak: 0,
-//     },
-//   },
-//   incantation: {
-//     description: "Cast a buff to increase strength", //similar to intent
-//     name: "Incantation",
-//     type: "Buff",
-//     damage: 0, // can we leave this off?
-//     buffs: {
-//       ritual: 3,
-//     },
-//     debuffs: {
-//       vulnerable: 0,
-//       weak: 0,
-//     },
-//   },
-// };
-
 function getBuffedMonsterFromAction() {
   return {
     ...this,
@@ -40,7 +14,7 @@ function getBuffedMonsterFromAction() {
 
 function getIntentMessage(player) {
   const damage = calcDamage(player, this.currentAction, this);
-  const damageMessage = damage ? `${damage} damage ` : "";
+  const damageMessage = this.currentAction.damage ? `${damage} damage ` : "";
   const blockMessage = this.currentAction.block
     ? `${this.currentAction.block} block `
     : "";
@@ -63,6 +37,7 @@ function getIntentMessage(player) {
 export const cultist = {
   name: "Cultist",
   type: "Normal",
+  url: "https://static.wikia.nocookie.net/slay-the-spire/images/c/c6/Cultist-pretty.png",
   currentHp: 50,
   maxHp: 50,
   strength: 0,
@@ -90,7 +65,6 @@ export const cultist = {
       },
     },
     darkStrike: {
-      //3, similar to intent
       name: "Dark Strike",
       type: "Attack",
       strength: 0,
@@ -119,11 +93,10 @@ export const cultist = {
   getIntentMessage,
 };
 
-// Jaw Worm	40-44	Bellow	Thrash	Chomp					Always starts with Chomp. Afterwards, has a 45-30-25 split between Bellow, Thrash and Chomp, but cannot use Thrash three times in a row or Chomp or Bellow twice in a row.
-
 export const jawWorm = {
   name: "Jaw Worm",
   type: "Normal",
+  url: "https://static.wikia.nocookie.net/slay-the-spire/images/d/d5/Jaw-worm-pretty.png",
   currentHp: 42,
   maxHp: 42,
   strength: 0,
@@ -135,7 +108,7 @@ export const jawWorm = {
   },
   actions: {
     chomp: {
-      description: "11 damage", //similar to intent
+      description: "11 damage",
       name: "Chomp",
       type: "Attack",
       damage: 11,
@@ -176,7 +149,7 @@ export const jawWorm = {
   getNewTurnMonster: function (turnNumber) {
     let random = Math.random();
     const newAction =
-      random < 0.4
+      random < 0.45
         ? this.actions.chomp
         : random < 0.75
         ? this.actions.thrash
@@ -189,6 +162,3 @@ export const jawWorm = {
   getBuffedMonsterFromAction,
   getIntentMessage,
 };
-
-//hits for 0 on turn 1 - casts a spell on himself called "ritual" - gives him +3 strength every turn
-// in our "start of turn logic" we have to increment his str - might be a way to automate with a function
