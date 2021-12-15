@@ -21,6 +21,8 @@ export default function monsterReducer(state = {}, action) {
   switch (type) {
     case c.START_COMBAT:
     case c.RESET_COMBAT:
+      console.log("starting new turn at combat start. turn number: " + turn);
+      
       let newMonster = cultist.getNewTurnMonster(0);
 
       const intentMessage = newMonster.getIntentMessage({
@@ -51,6 +53,7 @@ export default function monsterReducer(state = {}, action) {
       return state.getBuffedMonsterFromAction();
 
     case c.START_NEXT_TURN:
+      console.log("starting new turn at turn number: " + turn);
       let newTurnMonster = state.getNewTurnMonster(turn);
       const decrementedBuffs = {};
       Object.keys(state.debuffs).forEach((debuffKey) => {

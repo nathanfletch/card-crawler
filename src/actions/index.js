@@ -1,5 +1,6 @@
 import * as c from "./ActionTypes";
 export const startCombat = (deck, player) => ({
+  //does this need turn info because it also represents starting the first turn?
   type: c.START_COMBAT,
   deck,
   player,

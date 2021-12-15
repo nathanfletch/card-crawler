@@ -54,10 +54,13 @@ function Field() {
     setIsMonsterTurn(true);
     setTimeout(() => {
       dispatch(actions.resolveMonsterAction(player, monster));
-      setTurn((prevTurn) => prevTurn + 1);
+      //maybe get a new turn variable, increment, then pass to turn state and dispatch to avoid update error
+      console.log("incrementing turn from " + turn);
+      let newTurn = turn + 1;
+      setTurn(newTurn);
       setActionMessage("Starting a new turn");
       setTimeout(() => {
-        dispatch(actions.startNextTurn(combatDeck, player, monster, turn));
+        dispatch(actions.startNextTurn(combatDeck, player, monster, newTurn));
         setActionMessage(null);
         setIsMonsterTurn(false);
       }, 1000);
