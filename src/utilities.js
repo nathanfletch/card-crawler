@@ -1,4 +1,3 @@
-
 export function draw({ hand, drawPile, discardPile }, numToDraw) {
   let handCopy = [...hand];
   let drawCopy = [...drawPile];
@@ -22,5 +21,6 @@ export function calcDamage(target, card, attacker) {
   const mitigatedDamage =
     Math.floor(scaledAttack * (target.debuffs.vulnerable ? 1.5 : 1)) -
     target.block;
-  return mitigatedDamage;
+
+  return mitigatedDamage >= 0 ? mitigatedDamage : 0;
 }
